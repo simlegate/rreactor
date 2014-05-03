@@ -1,16 +1,26 @@
-require "rreactor/version"
-require "rreactor/dispatcher"
+require 'socket'
+
+require_relative "rreactor/version"
+require_relative "rreactor/dispatcher"
+
+require_relative "rreactor/reactor"
+require_relative "rreactor/event_handler"
 
 module Rreactor
 
-  @@event_action = nil
-
-  def self.start ip, port
+  def self.start ip, port, &block
     @server_socket = TCPServer.new ip, port
     dispatcher = Dispatcher.new @server_socket
-    reactor = Rreactor::Reactor.new
+    reactor = Rreactor::Reactor.new(dispatcher)
     reactor.register @server_socket, :accept_event
-    @@event_action = &block if block_given?
-    loop { dispatcher.handle_events }
+    $EVENT_ACTION = block if block_given?
+    puts 'starting server ....'
+    loop do
+      dispatcher.handle_events 
+    end
   end
+end
+
+Rreactor.start "0.0.0.0", 2000 do |socket|
+  puts socket.gets
 end

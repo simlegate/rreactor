@@ -1,9 +1,10 @@
+require 'singleton' 
 module Rreactor
   class Dispatcher
 
     def initialize socket
       @server_socket = socket
-      @sockets = Array(socket)
+      @sockets = [socket]
 
       @event_handlers = {
         :accept_event => {},
@@ -14,18 +15,20 @@ module Rreactor
 
     def register_handler event_handler, socket, event
       @event_handlers[event][socket] = event_handler
+      @sockets << socket unless @sockets.include?(socket)
     end
 
     def remove_handler event_handler, socket
       @event_handlers[:read_event].delete(socket)
       @event_handlers[:close_event].delete(socket)
-      # @sockets.delete(socket)
+      @sockets.delete(socket)
     end
 
     def handle_events
       r = IO.select(@sockets)[0]
       r.each do |socket|
         event_type = determine_event_type(socket)
+        p event_type
         handler = @event_handlers[event_type][socket]
         handler.handle_event
       end

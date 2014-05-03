@@ -1,12 +1,13 @@
 module Rreactor
   module EventHandler
     class ReaderHandler
-      def initialize socket
-        @socket = socket
+      def initialize socket, dispatcher
+        @socket, @dispatcher = socket, dispatcher
       end
 
       def handle_event
-        @@event_action.call
+        @socket.puts "received"
+        $EVENT_ACTION.call(@socket)
       end
     end
   end

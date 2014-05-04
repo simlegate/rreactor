@@ -28,11 +28,12 @@ module Rreactor
       r = IO.select(@sockets)[0]
       r.each do |socket|
         event_type = determine_event_type(socket)
-        p event_type
         handler = @event_handlers[event_type][socket]
         handler.handle_event
       end
     end
+
+    private
 
     def determine_event_type(socket)
       if socket == @server_socket
